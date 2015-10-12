@@ -117,7 +117,7 @@ cookie: pass=1
 
 ### Do not cache 30x Redirects
 
-Source: [nocache30x.vcl](nocache30x.vcl)
+Source: [nocache30x.vcl](src/nocache30x.vcl)
 
 ````sh
 node src/backend.js &
