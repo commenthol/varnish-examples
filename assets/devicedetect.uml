@@ -1,0 +1,16 @@
+@startuml
+
+actor useragent
+participant varnish
+participant devicedetect
+participant backend
+
+useragent -> varnish : HTTP-Header \n"User-Agent"
+varnish -> devicedetect : /device (restart=0)
+varnish <- devicedetect : HTTP-Header \n"x-ua-device"
+varnish -> varnish : cache "/device" per "User-Agent"
+varnish -> backend : HTTP-Header "x-ua-device" (restart=1)
+varnish <- backend : cache page per "x-ua-device"
+useragent <- varnish : deliver page 
+
+@enduml
