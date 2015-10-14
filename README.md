@@ -6,19 +6,20 @@
 
 <!-- !toc (minlevel=2 omit="Table of Contents") -->
 
-* [Pre-requisites](#pre-requisites)
+* [Prerequisites](#prerequisites)
 * [Examples](#examples)
   * [Alive Page](#alive-page)
   * [Switch to a different backend per URL](#switch-to-a-different-backend-per-url)
   * [Listen to another port and redirect the request to the same server](#listen-to-another-port-and-redirect-the-request-to-the-same-server)
   * [Whitelist cookies](#whitelist-cookies)
   * [Do not cache 30x Redirects](#do-not-cache-30x-redirects)
+  * [Using restart if content not found at backend](#using-restart-if-content-not-found-at-backend)
   * [Device detection with restart](#device-detection-with-restart)
 * [References](#references)
 
 <!-- toc! -->
 
-## Pre-requisites
+## Prerequisites
 
 - Varnish 4.0 [src](src/) / 3.0 [src3](src3/)
 - node.js
@@ -132,6 +133,25 @@ curl -v http://localhost:8000/302
 < Age: 0
 ````
 
+### Using restart if content not found at backend
+
+This recipe is useful to normalize URLs if content is distributed over various backends (e.g. SEO) or to serve a fallback content on 404 responses.
+
+See [VCLExampleRestarts][]
+
+![Flow](assets/restart404.png)
+
+Source: [restart404.vcl](src/restart404.vcl)
+
+````sh
+node src/backend.js &
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/restart404.vcl
+
+curl -v http://localhost:8000/404/
+<
+4000:/other GET undefined
+````
+
 ### Device detection with restart
 
 This example demonstrates how to use a device-detection service with varnish. It uses the restart mechanism to both cache the device detection response as well as the device specific page.
@@ -170,10 +190,12 @@ curl -v "http://localhost:8000"
 * [Upgrading to Varnish 4.0][Upgrading to Varnish 4.0]
 * [varnish-examples][varnish-examples]
 * [VCLExampleRemovingSomeCookies][VCLExampleRemovingSomeCookies]
+* [VCLExampleRestarts][VCLExampleRestarts]
 
 <!-- ref! -->
 
 [varnish-examples]: https://www.varnish-cache.org/trac/wiki/VCLExamples
 [VCLExampleRemovingSomeCookies]: https://www.varnish-cache.org/trac/wiki/VCLExampleRemovingSomeCookies
+[VCLExampleRestarts]: https://www.varnish-cache.org/trac/wiki/VCLExampleRestarts
 [monit]: https://mmonit.com/monit/
 [Upgrading to Varnish 4.0]: https://www.varnish-cache.org/docs/trunk/whats-new/upgrade-4.0.html

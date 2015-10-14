@@ -1,0 +1,16 @@
+@startuml
+
+actor useragent
+participant varnish
+participant default
+participant other
+
+useragent -> varnish
+varnish -> default : /404/
+varnish <- default : HTTP 404
+varnish -> varnish : change URL and restart
+varnish -> other : /other
+varnish <- other : HTTP 200
+useragent <- varnish
+
+@enduml

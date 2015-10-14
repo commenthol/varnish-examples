@@ -1,6 +1,7 @@
 'use strict'
 
 var http = require('http')
+var url = require('url')
 
 /**
  * starts a HTTP Server
@@ -8,13 +9,14 @@ var http = require('http')
 function startServer (port) {
   http.createServer(function (req, res) {
     var status
+    var query = url.parse(req.url, true).query || {}
 
-    console.log(req.url, req.headers)
+    console.log(req.url, req.headers, query)
     if (req.headers['x-ua-device']) {
       res.setHeader('Vary', 'x-ua-device')
     }
 
-    if (/\/\d{3}$/.test(req.url)) {
+    if (/\/\d{3}/.test(req.url)) {
       status = req.url.replace(/\/(\d{3})/, '$1')
       status = parseInt(status, 10)
       switch (status) {
@@ -22,8 +24,7 @@ function startServer (port) {
         case 302:
         case 303: {
           res.statusCode = status
-          //res.setHeader('Cache-Control', 'no-cache, max-age=0')
-          res.setHeader('Location', '/')
+          res.setHeader('Location', (query.location || '/'))
           break
         }
         case 400:
