@@ -81,7 +81,7 @@ Source: [secondport.vcl](conf/secondport.vcl)
 
 ````sh
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000,127.0.0.1:8001 -f conf/secondport.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -a 127.0.0.1:8001 -f conf/secondport.vcl
 
 # repeat the requests after some seconds to see that page gets cached
 curl -v http://localhost:8000/
@@ -97,6 +97,7 @@ curl -v http://localhost:8001/ -X POST
 < Age: 0
 3000:/ POST
 ````
+
 ### Remove Response Headers
 
 For security reasons hide the servers default response headers
@@ -110,7 +111,6 @@ varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/respheaders.vcl
 curl -v http://localhost:8000/
 
 ```
-
 
 ### Whitelist cookies
 
