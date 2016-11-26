@@ -21,11 +21,11 @@
 
 ## Prerequisites
 
-- Varnish 4.0 [src](src/) / 3.0 [src3](src3/)
+- Varnish 4.0 [conf](conf/) / 3.0 [conf3](conf3/)
 - node.js
 - curl
 
-[`src`](src/) contains the examples for Varnish 4.0; [`src3`](src3/) contains the samples for Varnish 3.0
+[`conf`](conf/) contains the examples for Varnish 4.0; [`conf3`](conf3/) contains the samples for Varnish 3.0
 
 ## Examples
 
@@ -33,11 +33,11 @@
 
 Check if varnish is up and running (e.g. if using with [monit][])
 
-Source: [alive.vcl](src/alive.vcl)
+Source: [alive.vcl](conf/alive.vcl)
 
 ````sh
 # start the varnish webcache locally
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/alive.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/alive.vcl
 
 curl -v http://localhost:8000/alive
 ````
@@ -46,12 +46,12 @@ curl -v http://localhost:8000/alive
 
 Use varnish to change to a different backend per URL.
 
-Source: [other.vcl](src/other.vcl)
+Source: [other.vcl](conf/other.vcl)
 
 ````sh
 # start a http backend server
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/other.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/other.vcl
 
 curl -v http://localhost:8000/
 curl -v http://localhost:8000/other/
@@ -77,11 +77,11 @@ curl -v http://localhost:8000/other/ -X POST
 
 ### Listen to another port and redirect the request to the same server
 
-Source: [secondport.vcl](src/secondport.vcl)
+Source: [secondport.vcl](conf/secondport.vcl)
 
 ````sh
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000,127.0.0.1:8001 -f src/secondport.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000,127.0.0.1:8001 -f conf/secondport.vcl
 
 # repeat the requests after some seconds to see that page gets cached
 curl -v http://localhost:8000/
@@ -97,18 +97,32 @@ curl -v http://localhost:8001/ -X POST
 < Age: 0
 3000:/ POST
 ````
+### Remove Response Headers
+
+For security reasons hide the servers default response headers
+
+Source: [respheaders.vcl](conf/respheaders.vcl)
+
+```sh
+node src/backend.js &
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/respheaders.vcl
+
+curl -v http://localhost:8000/
+
+```
+
 
 ### Whitelist cookies
 
 Remove unwanted cookies from a request to improve caching
 
-Source: [cookiewhitelist.vcl](src/cookiewhitelist.vcl)
+Source: [cookiewhitelist.vcl](conf/cookiewhitelist.vcl)
 
 See also [here][VCLExampleRemovingSomeCookies].
 
 ````sh
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/cookiewhitelist.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/cookiewhitelist.vcl
 
 curl -v -b "pass=1; delete=1" http://localhost:8000
 < Age: 0
@@ -118,11 +132,11 @@ cookie: pass=1
 
 ### Do not cache 30x Redirects
 
-Source: [nocache30x.vcl](src/nocache30x.vcl)
+Source: [nocache30x.vcl](conf/nocache30x.vcl)
 
 ````sh
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/nocache30x.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/nocache30x.vcl
 
 curl -v http://localhost:8000/301
 < Location: /
@@ -141,11 +155,11 @@ See [VCLExampleRestarts][]
 
 ![Flow](assets/restart404.png)
 
-Source: [restart404.vcl](src/restart404.vcl)
+Source: [restart404.vcl](conf/restart404.vcl)
 
 ````sh
 node src/backend.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/restart404.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/restart404.vcl
 
 curl -v http://localhost:8000/404/
 <
@@ -162,12 +176,12 @@ With this a device specific page is being delivered by the "backend" and cached 
 
 ![Flow](assets/devicedetect.png)
 
-Source: [devicedetect.vcl](src/devicedetect.vcl)
+Source: [devicedetect.vcl](conf/devicedetect.vcl)
 
 ````sh
 # start the sample device-detection service (this starts the backend as well)
 node src/devicedetect.js &
-varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f src/devicedetect.vcl
+varnishd -F -n $(pwd) -a 127.0.0.1:8000 -f conf/devicedetect.vcl
 
 curl -v "http://localhost:8000" -A iphone
 < x-ua-device: mobile
